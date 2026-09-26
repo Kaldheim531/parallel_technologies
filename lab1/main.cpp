@@ -3,12 +3,13 @@
 #include <cmath>
 #include <omp.h>
 
-
+// подынтегральная функция f(x) = sqrt(x*(3-x)) / (x+1)
 double f(double x) {
   return std::sqrt(x * (3.0 - x)) / (x + 1.0);
 }
 
-
+// составная формула Симпсона на n отрезках (n должно быть четным)
+// распараллелена по примеру из лекции: #pragma omp parallel for reduction(+:sum)
 double simpson(double a, double b, int n) {
   double h = (b - a) / n;
   double sum = 0.0;
@@ -36,19 +37,9 @@ int main(int argc, char** argv) {
   }
   omp_set_num_threads(threads);
 
-  if (argc > 2) {
-    int n = std::atoi(argv[2]);
-    if (n % 2 != 0) n++; 
-
-    double start = omp_get_wtime();
-    double res = simpson(a, b, n);
-    double end = omp_get_wtime();
-
-    
-    printf("%d %d %.10f %.6f\n", threads, n, res, end - start);
-    return 0;
-  }
-
+  // находим n по правилу Рунге с точностью eps.
+  // для метода Симпсона (4й порядок) знаменатель в правиле Рунге равен
+  // 2^4 - 1 = 15 (это видно на доске с лекции)
   int n = 2;
   double I_prev = simpson(a, b, n);
   double I_cur = I_prev;
@@ -70,10 +61,9 @@ int main(int argc, char** argv) {
 
   double end = omp_get_wtime();
 
-  printf("Потоков:            %d\n", threads);
-  printf("Число отрезков n:   %d\n", n);
-  printf("Значение интеграла: %.10f\n", I_cur);
-  printf("Время работы:       %.6f сек\n", end - start);
+  // формат вывода: потоков n значение_интеграла время
+  // (удобно парсить в bench.txt для построения графика)
+  printf("%d %d %.10f %.6f\n", threads, n, I_cur, end - start);
 
   return 0;
 }
