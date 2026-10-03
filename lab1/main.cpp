@@ -3,13 +3,10 @@
 #include <cmath>
 #include <omp.h>
 
-// подынтегральная функция f(x) = sqrt(x*(3-x)) / (x+1)
 double f(double x) {
   return std::sqrt(x * (3.0 - x)) / (x + 1.0);
 }
 
-// составная формула Симпсона на n отрезках (n должно быть четным)
-// распараллелена по примеру из лекции: #pragma omp parallel for reduction(+:sum)
 double simpson(double a, double b, int n) {
   double h = (b - a) / n;
   double sum = 0.0;
@@ -37,7 +34,24 @@ int main(int argc, char** argv) {
   }
   omp_set_num_threads(threads);
 
-  // находим n по правилу Рунге с точностью eps.
+  // ЧАСТЬ 2 задания (масштабируемость): если передан второй аргумент,
+  // считаем интеграл при фиксированном большом n напрямую, без Рунге.
+  // Это отдельный эксперимент: тут нам не нужна точность 1e-6, нам нужна
+  // просто ощутимая вычислительная нагрузка, чтобы честно замерить,
+  // как время падает с ростом числа потоков.
+  if (argc > 2) {
+    long long n = std::atoll(argv[2]);
+    if (n % 2 != 0) n++; // n должно быть четным
+
+    double start = omp_get_wtime();
+    double res = simpson(a, b, static_cast<int>(n));
+    double end = omp_get_wtime();
+
+    printf("%d %lld %.10f %.6f\n", threads, n, res, end - start);
+    return 0;
+  }
+
+  // ЧАСТЬ 1 задания (точность): находим n по правилу Рунге с точностью eps.
   // для метода Симпсона (4й порядок) знаменатель в правиле Рунге равен
   // 2^4 - 1 = 15 (это видно на доске с лекции)
   int n = 2;

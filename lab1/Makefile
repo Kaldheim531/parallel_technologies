@@ -16,18 +16,17 @@ $(BIN): $(OBJ)
 clean:
 	@rm -f $(BIN) *.o bench.txt
 
-# запуск в обычном режиме (поиск n по правилу Рунге), число потоков - через
-# переменную окружения OMP_NUM_THREADS или через THREADS=... в командной строке
 THREADS ?= 4
 run: $(BIN)
 	@./$(BIN) $(THREADS)
 
-# прогон замера масштабируемости: 2, 4, 16, 32, 64 потока,
-# результат построчно пишется в bench.txt (потоков n интеграл время)
+
+N ?= 200000000
+THREADS_LIST ?= 1 2 4 8
 bench: $(BIN)
 	@rm -f bench.txt
-	@for t in 2 4 16 32 64 ; do \
-		./$(BIN) $$t >> bench.txt ; \
+	@for t in $(THREADS_LIST) ; do \
+		./$(BIN) $$t $(N) >> bench.txt ; \
 	done
 	@cat bench.txt
 

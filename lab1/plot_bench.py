@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 
-# файл bench.txt: строки вида "потоков n интеграл время"
 filename = "bench.txt"
 
 threads = []
@@ -17,7 +16,6 @@ with open(filename, "r") as f:
     threads.append(t)
     time.append(dt)
 
-# сортируем по числу потоков на случай, если строки шли не по порядку
 pairs = sorted(zip(threads, time))
 threads = [p[0] for p in pairs]
 time = [p[1] for p in pairs]
